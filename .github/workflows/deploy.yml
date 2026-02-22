@@ -1,4 +1,4 @@
-name: Deploy to VPS (Self-Healing Mode)
+name: Deploy to VPS (Port 8081 Recovery)
 
 on:
   push:
@@ -19,22 +19,27 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "--- Deployment Starting ---"
+            echo "--- Starting Aggressive Port Recovery (8081) ---"
+            # 停止并删除冲突容器
+            docker stop snake-game-container-8081 || true
+            docker rm snake-game-container-8081 || true
+            
+            mkdir -p ~/apps/snake-game
             cd ~/apps/snake-game
-            git fetch origin main
-            git reset --hard origin/main
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/ericlinyi1/snake-cartoon-edition.git .
+            else
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+            
+            # 强制重启
             docker compose up -d --build --force-recreate
             
-            echo "--- Internal Verification ---"
+            echo "--- Verifying ---"
             sleep 5
-            INTERNAL_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8085)
-            echo "Internal Status (Port 8085): $INTERNAL_STATUS"
-            
-            if [ "$INTERNAL_STATUS" == "200" ]; then
-              echo "✅ Internal Success! Opening Firewall..."
-              sudo ufw allow 8085/tcp || echo "UFW failed, check security groups manually."
-            else
-              echo "❌ Internal Failure. Checking container logs..."
-              docker logs snake-game-container-8085 | tail -n 20
+            STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8081)
+            echo "Internal Status (8081): $STATUS"
+            if [ "$STATUS" != "200" ]; then
               exit 1
             fi

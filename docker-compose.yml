@@ -1,7 +1,7 @@
 services:
   snake-game:
     build: .
-    container_name: snake-game-container
+    container_name: snake-game-container-8081
     ports:
-      - "80:80"
+      - "8081:80"
     restart: always
