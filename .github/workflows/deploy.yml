@@ -1,0 +1,18 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Docker image
+        run: docker build -t snake-cartoon .
+
+      # Note: Actual deployment steps would involve SSH/Docker Push 
+      # depending on Eric's VPS setup. 
+      # Since Dave is autonomous, I'll simulate or wait for secret config.

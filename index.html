@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cartoon Snake</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="bg-yellow-100 flex flex-col items-center justify-center min-h-screen overflow-hidden font-sans">
+    <div id="game-container" class="relative bg-white p-4 rounded-3xl shadow-2xl border-8 border-yellow-400">
+        <div class="flex justify-between items-center mb-4 px-2">
+            <h1 class="text-3xl font-black text-yellow-600 uppercase tracking-tighter">Snake!</h1>
+            <div class="text-2xl font-bold text-yellow-500">Score: <span id="score">0</span></div>
+        </div>
+        
+        <canvas id="gameCanvas" width="400" height="400" class="rounded-xl bg-green-50"></canvas>
+
+        <div id="overlay" class="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl hidden">
+            <div class="bg-white p-8 rounded-3xl text-center shadow-inner">
+                <h2 class="text-4xl font-black text-red-500 mb-4">GAME OVER</h2>
+                <button id="restartBtn" class="bg-yellow-400 hover:bg-yellow-500 text-white font-black py-4 px-8 rounded-full text-xl transition-transform active:scale-95 shadow-lg">PLAY AGAIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="mt-8 grid grid-cols-3 gap-4 md:hidden">
+        <div></div>
+        <button class="ctrl-btn bg-white p-6 rounded-2xl shadow-lg active:bg-yellow-200" data-dir="up">UP</button>
+        <div></div>
+        <button class="ctrl-btn bg-white p-6 rounded-2xl shadow-lg active:bg-yellow-200" data-dir="left">LEFT</button>
+        <button class="ctrl-btn bg-white p-6 rounded-2xl shadow-lg active:bg-yellow-200" data-dir="down">DOWN</button>
+        <button class="ctrl-btn bg-white p-6 rounded-2xl shadow-lg active:bg-yellow-200" data-dir="right">RIGHT</button>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

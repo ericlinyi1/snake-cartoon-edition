@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+canvas {
+    image-rendering: pixelated;
+    touch-action: none;
+    max-width: 90vw;
+    max-height: 70vh;
+}
+
+.ctrl-btn {
+    user-select: none;
+    font-weight: 900;
+    color: #ca8a04;
+}
