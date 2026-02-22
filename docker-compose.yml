@@ -3,5 +3,5 @@ services:
     build: .
     container_name: snake-game-container
     ports:
-      - "8080:80"
+      - "8888:80"
     restart: always
