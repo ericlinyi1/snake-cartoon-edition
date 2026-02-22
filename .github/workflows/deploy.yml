@@ -1,4 +1,4 @@
-name: Deploy to VPS (Hard Reset Mode)
+name: Deploy to VPS (Self-Healing Mode)
 
 on:
   push:
@@ -19,29 +19,22 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "--- Starting Aggressive Cleanup ---"
-            # 停止并删除所有可能冲突的容器
-            docker stop snake-game-container || true
-            docker rm snake-game-container || true
-            docker stop hello-world-web-container || true
-            docker rm hello-world-web-container || true
-            
-            # 强行释放 8080 端口 (如果 docker-compose 没关干净)
-            # 使用 fuser 查找并杀死占用 8080 的进程 (需要权限)
-            sudo fuser -k 8080/tcp || true
-            
-            mkdir -p ~/apps/snake-game
+            echo "--- Deployment Starting ---"
             cd ~/apps/snake-game
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/ericlinyi1/snake-cartoon-edition.git .
-            else
-              git fetch origin main
-              git reset --hard origin/main
-            fi
-            
-            echo "--- Starting Container ---"
+            git fetch origin main
+            git reset --hard origin/main
             docker compose up -d --build --force-recreate
             
-            echo "--- Final Check ---"
+            echo "--- Internal Verification ---"
             sleep 5
-            docker ps | grep snake-game
+            INTERNAL_STATUS=$(curl -o /dev/null -s -w "%{http_code}" http://localhost:8085)
+            echo "Internal Status (Port 8085): $INTERNAL_STATUS"
+            
+            if [ "$INTERNAL_STATUS" == "200" ]; then
+              echo "✅ Internal Success! Opening Firewall..."
+              sudo ufw allow 8085/tcp || echo "UFW failed, check security groups manually."
+            else
+              echo "❌ Internal Failure. Checking container logs..."
+              docker logs snake-game-container-8085 | tail -n 20
+              exit 1
+            fi
