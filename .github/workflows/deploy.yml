@@ -1,4 +1,4 @@
-name: Deploy to VPS (Force Clear Port)
+name: Deploy to VPS (Hard Reset Mode)
 
 on:
   push:
@@ -19,18 +19,29 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 强力清理所有占用 8080 端口的容器
-            echo "--- Force Clearing Port 8080 ---"
-            docker ps -q --filter "publish=8080" | xargs -r docker stop
-            docker ps -qa --filter "publish=8080" | xargs -r docker rm
+            echo "--- Starting Aggressive Cleanup ---"
+            # 停止并删除所有可能冲突的容器
+            docker stop snake-game-container || true
+            docker rm snake-game-container || true
+            docker stop hello-world-web-container || true
+            docker rm hello-world-web-container || true
+            
+            # 强行释放 8080 端口 (如果 docker-compose 没关干净)
+            # 使用 fuser 查找并杀死占用 8080 的进程 (需要权限)
+            sudo fuser -k 8080/tcp || true
             
             mkdir -p ~/apps/snake-game
             cd ~/apps/snake-game
-            git fetch origin main
-            git reset --hard origin/main
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/ericlinyi1/snake-cartoon-edition.git .
+            else
+              git fetch origin main
+              git reset --hard origin/main
+            fi
             
-            echo "--- Starting Snake Game Container ---"
+            echo "--- Starting Container ---"
             docker compose up -d --build --force-recreate
             
-            echo "--- Final Verification ---"
+            echo "--- Final Check ---"
+            sleep 5
             docker ps | grep snake-game
