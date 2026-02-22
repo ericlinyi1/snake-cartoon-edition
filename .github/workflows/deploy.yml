@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to VPS (with Debug)
 
 on:
   push:
@@ -21,14 +21,11 @@ jobs:
           script: |
             mkdir -p ~/apps/snake-game
             cd ~/apps/snake-game
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/ericlinyi1/snake-cartoon-edition.git .
-            else
-              git fetch origin main
-              git reset --hard origin/main
-            fi
-            if command -v docker compose >/dev/null 2>&1; then
-              docker compose up -d --build
-            else
-              docker-compose up -d --build
-            fi
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build --force-recreate
+            sleep 5
+            echo "--- Debug: Container Files ---"
+            docker exec snake-game-container ls -al /usr/share/nginx/html/
+            echo "--- Debug: Nginx Logs ---"
+            docker logs snake-game-container | tail -n 20
